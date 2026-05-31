@@ -1,0 +1,27 @@
+name: Publish @feathq/datafile-schema
+
+on:
+  push:
+    tags: ["datafile-schema@v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: yarn workspace @feathq/datafile-schema run build
+      - run: yarn workspace @feathq/datafile-schema pack --out /tmp/pkg.tgz
+      - run: npm publish /tmp/pkg.tgz --provenance --access public
